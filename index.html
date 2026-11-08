@@ -73,6 +73,34 @@ input[type=text]{width:100%}
 .diff{font-size:1.05rem;line-height:1.8} .diff .w-ok{color:var(--good)} .diff .w-no{color:var(--bad);text-decoration:line-through}
 .diff .w-miss{background:var(--mark);padding:0 3px;border-radius:4px}
 .note{font-size:.85rem;color:var(--muted)}
+h2,h3{font-family:var(--display);line-height:1.2;margin:0}
+.course-intro,.lesson-card,.roadmap{display:flex;flex-direction:column;gap:12px}
+.course-bars{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.course-bar{display:flex;flex-direction:column;gap:6px}
+.course-bar .meter{height:10px}
+.course-bar .meter i{width:0}
+.course-bar b{font-variant-numeric:tabular-nums}
+.course-methods{display:flex;gap:8px;flex-wrap:wrap}
+.course-methods span,.level{font-size:.8rem;font-weight:700;color:var(--accent);background:var(--paper);border-radius:99px;padding:4px 10px}
+.lesson-list,.roadmap-list{display:flex;flex-direction:column;gap:8px}
+.lesson-item,.roadmap-item{border:1px solid var(--line);border-radius:12px;padding:12px}
+.lesson-item{display:flex;align-items:center;gap:10px}
+.lesson-item .btn{padding:7px 10px}
+.lesson-item[aria-current="step"]{border-color:var(--accent)}
+.lesson-item:has(.lesson-status[aria-label="Concluída"]){border-color:var(--good)}
+.lesson-title{flex:1}
+.lesson-status{font-size:.8rem;color:var(--muted)}
+.lesson-prompt{font-weight:700}
+.lesson-options{display:grid;grid-template-columns:1fr;gap:8px}
+.lesson-options .btn{text-align:left}
+.lesson-options .btn.ok{background:var(--good);border-color:var(--good);color:var(--sheet)}
+.lesson-options .btn.no{background:var(--bad);border-color:var(--bad);color:var(--sheet)}
+.lesson-model{padding:12px;border-radius:12px;background:var(--paper)}
+.lesson-model p{margin:4px 0}
+.roadmap-item{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:start}
+.roadmap-item p{margin:4px 0 0;color:var(--muted);font-size:.9rem}
+details>summary{cursor:pointer;font-weight:700}
+@media(max-width:440px){.course-bars{grid-template-columns:1fr}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
@@ -86,6 +114,7 @@ input[type=text]{width:100%}
 
   <nav role="tablist">
     <button role="tab" id="tab-cards" aria-controls="p-cards" tabindex="0" data-tab="cards" aria-selected="true">Flashcards</button>
+    <button role="tab" id="tab-course" aria-controls="p-course" tabindex="-1" data-tab="course" aria-selected="false">Plano</button>
     <button role="tab" id="tab-quiz" aria-controls="p-quiz" tabindex="-1" data-tab="quiz" aria-selected="false">Quiz</button>
     <button role="tab" id="tab-dict" aria-controls="p-dict" tabindex="-1" data-tab="dict" aria-selected="false">Ditado</button>
     <button role="tab" id="tab-phrases" aria-controls="p-phrases" tabindex="-1" data-tab="phrases" aria-selected="false">Frases úteis</button>
@@ -110,6 +139,52 @@ input[type=text]{width:100%}
       <button class="btn good grow" id="rGood">Acertei</button>
     </div>
     <p class="note">Cards que você acerta voltam em 1, 3, 7, 14 e 30 dias. Os que você erra voltam na hora. Seu progresso fica salvo neste navegador.</p>
+  </section>
+
+  <!-- TRILHA -->
+  <section class="panel" id="p-course" role="tabpanel" aria-labelledby="tab-course" tabindex="0" hidden>
+    <div class="sheet course-intro">
+      <h2>Do básico ao avançado</h2>
+      <p style="margin:0">Uma trilha em 10 etapas inspirada nos níveis do CEFR. Estude cerca de 15 minutos por dia, em sessões curtas e frequentes; avance no seu ritmo.</p>
+      <div class="course-bars">
+        <div class="course-bar">
+          <span class="lbl">Conteúdo do plano publicado</span>
+          <div class="meter" role="progressbar" aria-label="Conteúdo do plano publicado" aria-valuemin="0" aria-valuemax="100" aria-valuenow="10"><i style="width:10%"></i></div>
+          <span><b>10%</b> · etapa inicial disponível</span>
+        </div>
+        <div class="course-bar">
+          <span class="lbl">Seu progresso de aprendizagem</span>
+          <div class="meter" role="progressbar" aria-label="Seu progresso de aprendizagem" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i id="courseProgressMeter"></i></div>
+          <span><b id="courseProgressText">0 de 100 lições</b> · salvo neste navegador</span>
+        </div>
+      </div>
+      <div class="course-methods" aria-label="Práticas de estudo">
+        <span>Recuperação ativa</span><span>Revisão espaçada</span><span>Compreensão + produção</span><span>Revisão cumulativa</span>
+      </div>
+      <p class="note" style="margin:0">Sugestão de rotina: tente lembrar sem olhar, aprenda um ponto novo, use-o em uma frase e revise amanhã. Falar em voz alta é opcional, mas recomendado.</p>
+    </div>
+
+    <div class="sheet lesson-card">
+      <div>
+        <span class="level">ETAPA 1 · A1</span>
+        <h3 style="margin-top:8px">Primeiras interações</h3>
+        <p class="note" style="margin-bottom:0">Objetivo: apresentar-se e formar frases simples sobre você.</p>
+      </div>
+      <div class="lesson-list" id="lessonList" aria-label="Lições da etapa inicial"></div>
+      <div class="lesson-card" id="lessonContent" aria-live="polite"></div>
+    </div>
+
+    <details class="sheet roadmap">
+      <summary>Ver o plano completo · 10 etapas</summary>
+      <div class="roadmap-list" id="roadmapList"></div>
+      <p class="note" style="margin:0">Os módulos seguintes são um roteiro de estudo e serão publicados com lições e exercícios próprios. Os níveis indicam objetivos aproximados, não uma certificação.</p>
+    </details>
+
+    <div class="sheet">
+      <h3>Por que este formato?</h3>
+      <p>As atividades pedem que você recupere respostas da memória em vez de apenas reler; revisões em dias diferentes ajudam a reter; exemplos curtos conectam compreensão e uso ativo. O CEFR organiza os objetivos do básico (A1) ao proficiente (C2).</p>
+      <p class="note" style="margin-bottom:0">Leituras: <a href="https://doi.org/10.1111/j.1539-6053.2013.01054.x" target="_blank" rel="noopener noreferrer">Dunlosky et al. (2013), técnicas de aprendizagem</a> · <a href="https://doi.org/10.1037/0033-2909.132.3.354" target="_blank" rel="noopener noreferrer">Cepeda et al. (2006), prática distribuída</a> · <a href="https://www.coe.int/en/web/common-european-framework-reference-languages" target="_blank" rel="noopener noreferrer">Quadro Europeu Comum de Referência</a>.</p>
+    </div>
   </section>
 
   <!-- QUIZ -->
@@ -232,13 +307,38 @@ const PHRASES={
  "Aeroporto e hotel":[["I have a reservation under Silva.","Tenho uma reserva no nome de Silva."],["What time is check-out?","Que horas é o check-out?"],["Where is gate twelve?","Onde fica o portão doze?"],["Is breakfast included?","O café da manhã está incluso?"],["My luggage didn't arrive.","Minha bagagem não chegou."],["How much is a taxi to downtown?","Quanto custa um táxi até o centro?"]],
  "Trabalho e reuniões":[["Let me share my screen.","Vou compartilhar minha tela."],["Can you hear me?","Vocês estão me ouvindo?"],["I'll get back to you on that.","Te dou um retorno sobre isso."],["Let's schedule a call.","Vamos marcar uma ligação."],["Could you clarify that?","Pode esclarecer isso?"],["I'm running a bit late.","Estou um pouco atrasado."]]
 };
+const COURSE_UNITS=[
+ ["A1","Primeiras interações","Cumprimentos, apresentações, pronomes e frases simples sobre você."],
+ ["A1","Vida cotidiana","Família, objetos, horários, preferências e perguntas frequentes."],
+ ["A2","Rotina e passado","Hábitos, experiências recentes e relatos curtos no passado."],
+ ["A2","Planos e situações reais","Futuro, direções, compras, viagens e pedidos educados."],
+ ["B1","Conversa independente","Conectar ideias, contar histórias e lidar com situações comuns."],
+ ["B1","Narrativas e opiniões","Explicar razões, comparar opções e defender opiniões simples."],
+ ["B2","Fluência social e profissional","Participar de conversas longas, reuniões e discussões."],
+ ["B2","Argumentação e nuances","Interpretar argumentos, registro, expressões e diferentes pontos de vista."],
+ ["C1","Precisão e flexibilidade","Usar inglês com clareza em contextos acadêmicos e profissionais."],
+ ["C1–C2","Autonomia avançada","Aprimorar nuances, compreensão implícita e expressão espontânea."]
+];
+const STARTER_LESSONS=[
+ {title:"Dizer quem você é",goal:"Use I am (ou I'm) para falar de si.",prompt:"Como dizer “Eu sou estudante” em inglês?",options:["I am a student.","I is a student.","I are student."],answer:0,example:"I am a student.",translation:"Eu sou estudante.",tip:"Com I, use am. Antes de uma profissão no singular, normalmente use a ou an."},
+ {title:"Falar com você",goal:"Use you are (ou you're) para falar com alguém.",prompt:"Como perguntar “Você está pronto(a)?”",options:["You are ready?","Are you ready?","Is you ready?"],answer:1,example:"Are you ready?",translation:"Você está pronto(a)?",tip:"Em perguntas com o verbo be, coloque are antes de you."},
+ {title:"Dizer seu nome",goal:"Apresente-se com My name is…",prompt:"Como dizer “Meu nome é Ana”?",options:["My name Ana.","My name is Ana.","I name is Ana."],answer:1,example:"My name is Ana.",translation:"Meu nome é Ana.",tip:"A estrutura é My name is + nome. Também é comum dizer I'm Ana."},
+ {title:"Cumprimentar",goal:"Escolha um cumprimento adequado ao horário.",prompt:"Você encontra alguém pela manhã. O que pode dizer?",options:["Good night!","Good morning!","Goodbye morning!"],answer:1,example:"Good morning!",translation:"Bom dia!",tip:"Good morning é usado pela manhã. Good night costuma ser uma despedida à noite."},
+ {title:"Perguntar e dizer a idade",goal:"Forme frases de idade com I am … years old.",prompt:"Como dizer “Eu tenho 20 anos” em inglês?",options:["I have 20 years.","I am 20 years old.","I has 20 years old."],answer:1,example:"I am 20 years old.",translation:"Eu tenho 20 anos.",tip:"Em inglês, fale da idade com o verbo be: I am … years old."},
+ {title:"Usar a e an",goal:"Escolha a ou an pelo som inicial da palavra seguinte.",prompt:"Complete: “She has ___ apple.”",options:["a","an","the"],answer:1,example:"She has an apple.",translation:"Ela tem uma maçã.",tip:"Use an antes de som de vogal. O que importa é o som inicial, não apenas a letra."},
+ {title:"Apontar para algo",goal:"Use this para algo singular que está perto.",prompt:"Você mostra um livro que está perto. Como diz “Este é meu livro”?",options:["This is my book.","These is my book.","This are my book."],answer:0,example:"This is my book.",translation:"Este é meu livro.",tip:"This combina com uma coisa perto e singular; use is."},
+ {title:"Falar do que alguém tem",goal:"Use have com I/you e has com he/she/it.",prompt:"Complete: “She ___ a brother.”",options:["have","has","is"],answer:1,example:"She has a brother.",translation:"Ela tem um irmão.",tip:"Na terceira pessoa do singular (he, she, it), have muda para has."},
+ {title:"Descrever sua rotina",goal:"Use o presente simples para hábitos e rotinas.",prompt:"Complete: “I ___ every morning.”",options:["work","works","working"],answer:0,example:"I work every morning.",translation:"Eu trabalho todas as manhãs.",tip:"Com I, o verbo principal não recebe -s no presente simples."},
+ {title:"Fazer uma apresentação curta",goal:"Combine apresentação, origem e uma informação pessoal.",prompt:"Alguém pergunta “Where are you from?”. Qual resposta faz sentido?",options:["I'm from Brazil.","I have Brazil.","I from are Brazil."],answer:0,example:"I'm from Brazil. I'm a student.",translation:"Sou do Brasil. Sou estudante.",tip:"Where are you from? pergunta de onde alguém é. Responda I'm from + lugar."}
+];
 const ALL=[];for(const c in VOCAB)VOCAB[c].forEach(v=>ALL.push({id:v[0],cat:c,en:v[0],ipa:v[1],pt:v[2],ex:v[3],expt:v[4]}));
 const SENT=[...ALL.map(w=>w.ex),...Object.values(PHRASES).flat().map(p=>p[0])];
 
 // ---- storage (best effort) ----
 const KEY="caderno-ingles-v1";
-let S={cards:{},days:[],dict:0};
+let S={cards:{},days:[],dict:0,course:{completed:[]}};
 try{const r=localStorage.getItem(KEY);if(r)S=Object.assign(S,JSON.parse(r));}catch(e){}
+if(!S.course||!Array.isArray(S.course.completed))S.course={completed:[]};
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}};
 const today=()=>{const d=new Date();return d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate();};
 const dayNum=()=>Math.floor((Date.now()-new Date().getTimezoneOffset()*6e4)/864e5);
@@ -278,6 +378,100 @@ tabs.forEach((tab,index)=>{
     selectTab(tabs[next]);
   };
 });
+
+// ---- guided learning path ----
+const COURSE_TOTAL=100;
+const lessonList=document.getElementById("lessonList");
+const lessonContent=document.getElementById("lessonContent");
+const courseProgressMeter=document.getElementById("courseProgressMeter");
+const courseProgressText=document.getElementById("courseProgressText");
+const roadmapList=document.getElementById("roadmapList");
+let selectedLesson=0;
+const lessonId=i=>`a1-${i+1}`;
+function completedLessons(){return new Set(S.course.completed.filter(id=>typeof id==="string"));}
+function renderRoadmap(){
+  roadmapList.innerHTML="";
+  COURSE_UNITS.forEach(([level,title,goal],index)=>{
+    const item=document.createElement("div");item.className="roadmap-item";
+    const badge=document.createElement("span");badge.className="level";badge.textContent=level;
+    const body=document.createElement("div");
+    const heading=document.createElement("strong");heading.textContent=`${index+1}. ${title}`;
+    const description=document.createElement("p");description.textContent=goal;
+    const status=document.createElement("span");status.className="note";status.textContent=index===0?"Conteúdo inicial publicado":"Conteúdo planejado";
+    body.append(heading,description,status);item.append(badge,body);roadmapList.append(item);
+  });
+}
+function renderCourse(){
+  const done=completedLessons();
+  const completedCount=STARTER_LESSONS.filter((_,i)=>done.has(lessonId(i))).length;
+  const progress=Math.round(completedCount/COURSE_TOTAL*100);
+  courseProgressMeter.style.width=progress+"%";
+  courseProgressMeter.parentElement.setAttribute("aria-valuenow",progress);
+  courseProgressText.textContent=`${completedCount} de ${COURSE_TOTAL} lições`;
+  const nextLesson=STARTER_LESSONS.findIndex((_,i)=>!done.has(lessonId(i)));
+  if(!done.has(lessonId(selectedLesson))&&nextLesson>=0)selectedLesson=nextLesson;
+  if(nextLesson<0)selectedLesson=STARTER_LESSONS.length-1;
+  lessonList.innerHTML="";
+  STARTER_LESSONS.forEach((lesson,index)=>{
+    const isDone=done.has(lessonId(index)),locked=!isDone&&index!==nextLesson;
+    const item=document.createElement("button");item.type="button";item.className="btn lesson-item";
+    if(isDone)item.classList.add("done");
+    item.disabled=locked;item.setAttribute("aria-current",index===selectedLesson?"step":"false");
+    const title=document.createElement("span");title.className="lesson-title";title.textContent=`${index+1}. ${lesson.title}`;
+    const status=document.createElement("span");status.className="lesson-status";
+    status.textContent=isDone?"Concluída":locked?"Bloqueada":index===nextLesson?"Próxima":"Disponível";
+    if(isDone)status.setAttribute("aria-label","Concluída");
+    item.append(title,status);item.onclick=()=>{selectedLesson=index;renderCourse();};
+    lessonList.append(item);
+  });
+  renderCourseLesson(selectedLesson,done);
+}
+function renderCourseLesson(index,done=completedLessons()){
+  const lesson=STARTER_LESSONS[index],isDone=done.has(lessonId(index));
+  lessonContent.innerHTML="";
+  const heading=document.createElement("h3");heading.textContent=`Lição ${index+1} · ${lesson.title}`;
+  const goal=document.createElement("p");goal.className="note";goal.textContent=lesson.goal;
+  const prompt=document.createElement("p");prompt.className="lesson-prompt";prompt.textContent=lesson.prompt;
+  const options=document.createElement("div");options.className="lesson-options";
+  const feedback=document.createElement("div");feedback.className="fb";feedback.setAttribute("aria-live","polite");
+  lesson.options.forEach((text,optionIndex)=>{
+    const button=document.createElement("button");button.type="button";button.className="btn";button.textContent=text;
+    if(isDone){button.disabled=true;if(optionIndex===lesson.answer)button.classList.add("ok");}
+    button.onclick=()=>{
+      if(button.disabled)return;
+      if(optionIndex===lesson.answer){
+        options.querySelectorAll("button").forEach(option=>{option.disabled=true;});
+        button.classList.add("ok");feedback.className="fb ok";feedback.textContent="Isso! Agora pratique a frase em voz alta ou ouça o exemplo.";
+        showLessonModel(lesson,index,lessonContent);
+      }else{
+        button.disabled=true;button.classList.add("no");feedback.className="fb no";
+        feedback.textContent="Ainda não. Tente outra opção. Dica: "+lesson.tip;
+      }
+    };
+    options.append(button);
+  });
+  lessonContent.append(heading,goal,prompt,options,feedback);
+  if(isDone){
+    feedback.className="fb ok";feedback.textContent="Lição concluída. Revise o exemplo quando quiser.";
+    showLessonModel(lesson,index,lessonContent);
+  }
+}
+function showLessonModel(lesson,index,container){
+  const model=document.createElement("div");model.className="lesson-model";
+  const example=document.createElement("p");example.textContent=`${lesson.example} — ${lesson.translation}`;
+  const tip=document.createElement("p");tip.className="note";tip.textContent=lesson.tip;
+  const audio=spkBtn(lesson.example,"Ouvir frase de exemplo");
+  model.append(example,tip,audio);container.append(model);
+  if(completedLessons().has(lessonId(index)))return;
+  const complete=document.createElement("button");complete.type="button";complete.className="btn primary";
+  complete.textContent="Concluir lição";
+  complete.onclick=()=>{
+    if(!S.course.completed.includes(lessonId(index)))S.course.completed.push(lessonId(index));
+    save();markStudy();selectedLesson=Math.min(index+1,STARTER_LESSONS.length-1);renderCourse();
+  };
+  container.append(complete);
+}
+renderRoadmap();renderCourse();
 
 // ---- flashcards (spaced repetition) ----
 const INTERVALS=[0,1,3,7,14,30];
