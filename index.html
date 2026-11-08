@@ -42,6 +42,7 @@ nav button:focus-visible,button:focus-visible,select:focus-visible,input:focus-v
 .lbl{font-size:.75rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700}
 select,input[type=text]{font:inherit;color:var(--ink);background:var(--sheet);border:1.5px solid var(--line);border-radius:10px;padding:10px 12px}
 input[type=text]{width:100%}
+textarea{width:100%;resize:vertical;font:inherit;color:var(--ink);background:var(--sheet);border:1.5px solid var(--line);border-radius:10px;padding:10px 12px}
 .btn{font:700 1rem var(--body);cursor:pointer;border:1.5px solid var(--line);background:var(--sheet);color:var(--ink);border-radius:12px;padding:11px 16px}
 .btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
 .btn.good{border-color:var(--good);color:var(--good)} .btn.bad{border-color:var(--bad);color:var(--bad)}
@@ -86,11 +87,14 @@ h2,h3{font-family:var(--display);line-height:1.2;margin:0}
 .lesson-list,.roadmap-list{display:flex;flex-direction:column;gap:8px}
 .lesson-item,.roadmap-item{border:1px solid var(--line);border-radius:12px;padding:12px}
 .lesson-item{display:flex;align-items:center;gap:10px}
-.lesson-item .btn{padding:7px 10px}
 .lesson-item[aria-current="step"]{border-color:var(--accent)}
 .lesson-item:has(.lesson-status[aria-label="Concluída"]){border-color:var(--good)}
 .lesson-title{flex:1}
 .lesson-status{font-size:.8rem;color:var(--muted)}
+.unit-list{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.unit-item{text-align:left}
+.unit-item[aria-current="step"]{border-color:var(--accent)}
+.unit-item small{display:block;color:var(--muted)}
 .lesson-prompt{font-weight:700}
 .lesson-options{display:grid;grid-template-columns:1fr;gap:8px}
 .lesson-options .btn{text-align:left}
@@ -98,8 +102,25 @@ h2,h3{font-family:var(--display);line-height:1.2;margin:0}
 .lesson-options .btn.no{background:var(--bad);border-color:var(--bad);color:var(--sheet)}
 .lesson-model{padding:12px;border-radius:12px;background:var(--paper)}
 .lesson-model p{margin:4px 0}
+.unit-test{display:flex;flex-direction:column;gap:12px}
+.test-question{font-weight:700}
+.test-options{display:grid;grid-template-columns:1fr;gap:8px}
+.test-options .btn{text-align:left}
+.test-options .btn.ok{background:var(--good);border-color:var(--good);color:var(--sheet)}
+.test-options .btn.no{background:var(--bad);border-color:var(--bad);color:var(--sheet)}
+.test-result{padding:12px;border-radius:12px;background:var(--paper)}
 .roadmap-item{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:start}
 .roadmap-item p{margin:4px 0 0;color:var(--muted);font-size:.9rem}
+.chat-intro,.chat-box,.chat-form{display:flex;flex-direction:column;gap:12px}
+.chat-intro p{margin:0}
+.chat-messages{display:flex;flex-direction:column;gap:10px;min-height:180px;max-height:48vh;overflow:auto;padding:12px;background:var(--paper);border-radius:12px}
+.chat-message{max-width:90%;padding:10px 12px;border-radius:12px;background:var(--sheet);overflow-wrap:anywhere;white-space:pre-wrap}
+.chat-message.user{align-self:flex-end;background:var(--accent);color:var(--accent-ink)}
+.chat-message.assistant{align-self:flex-start;border:1px solid var(--line)}
+.chat-toggle{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:.9rem}
+.chat-toggle input{width:18px;height:18px;accent-color:var(--accent)}
+.chat-form{gap:8px}
+.chat-status-error{color:var(--bad)}
 details>summary{cursor:pointer;font-weight:700}
 @media(max-width:440px){.course-bars{grid-template-columns:1fr}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
@@ -119,6 +140,7 @@ details>summary{cursor:pointer;font-weight:700}
     <button role="tab" id="tab-quiz" aria-controls="p-quiz" tabindex="-1" data-tab="quiz" aria-selected="false">Quiz</button>
     <button role="tab" id="tab-dict" aria-controls="p-dict" tabindex="-1" data-tab="dict" aria-selected="false">Ditado</button>
     <button role="tab" id="tab-phrases" aria-controls="p-phrases" tabindex="-1" data-tab="phrases" aria-selected="false">Frases úteis</button>
+    <button role="tab" id="tab-chat" aria-controls="p-chat" tabindex="-1" data-tab="chat" aria-selected="false">Conversa</button>
   </nav>
 
   <!-- FLASHCARDS -->
@@ -146,39 +168,46 @@ details>summary{cursor:pointer;font-weight:700}
   <section class="panel" id="p-course" role="tabpanel" aria-labelledby="tab-course" tabindex="0" hidden>
     <div class="sheet course-intro">
       <h2>Do básico ao avançado</h2>
-      <p style="margin:0">Uma trilha em 10 etapas inspirada nos níveis do CEFR. Estude cerca de 15 minutos por dia, em sessões curtas e frequentes; avance no seu ritmo.</p>
+      <p style="margin:0">Começamos do zero absoluto. Estude cerca de 15 minutos por dia; cada lição prepara você para a próxima e cada unidade termina com um teste. A próxima unidade é liberada quando você passar.</p>
       <div class="course-bars">
         <div class="course-bar">
-          <span class="lbl">Conteúdo do plano publicado</span>
-          <div class="meter" role="progressbar" aria-label="Conteúdo do plano publicado" aria-valuemin="0" aria-valuemax="100" aria-valuenow="10"><i style="width:10%"></i></div>
-          <span><b>10%</b> · etapa inicial disponível</span>
+          <span class="lbl">Unidades com aulas e testes</span>
+          <div class="meter" role="progressbar" aria-label="Unidades publicadas" aria-valuemin="0" aria-valuemax="10" aria-valuenow="4"><i id="publishedUnitsMeter"></i></div>
+          <span><b>4 de 10</b> unidades publicadas</span>
         </div>
         <div class="course-bar">
           <span class="lbl">Seu progresso de aprendizagem</span>
           <div class="meter" role="progressbar" aria-label="Seu progresso de aprendizagem" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i id="courseProgressMeter"></i></div>
-          <span><b id="courseProgressText">0 de 100 lições</b> · salvo neste navegador</span>
+          <span><b id="courseProgressText">0 de 20 atividades</b> · salvo neste navegador</span>
         </div>
       </div>
       <div class="course-methods" aria-label="Práticas de estudo">
         <span>Recuperação ativa</span><span>Revisão espaçada</span><span>Compreensão + produção</span><span>Revisão cumulativa</span>
       </div>
-      <p class="note" style="margin:0">Sugestão de rotina: tente lembrar sem olhar, aprenda um ponto novo, use-o em uma frase e revise amanhã. Falar em voz alta é opcional, mas recomendado.</p>
+      <p class="note" style="margin:0">Cada atividade começa com uma pergunta. Tente responder antes da dica; depois ouça e repita o exemplo. Você pode errar sem perder o progresso.</p>
     </div>
 
     <div class="sheet lesson-card">
       <div>
-        <span class="level">ETAPA 1 · A1</span>
-        <h3 style="margin-top:8px">Primeiras interações</h3>
-        <p class="note" style="margin-bottom:0">Objetivo: apresentar-se e formar frases simples sobre você.</p>
+        <span class="level" id="unitLevel">UNIDADE 1</span>
+        <h3 style="margin-top:8px" id="unitTitle"></h3>
+        <p class="note" style="margin-bottom:0" id="unitGoal"></p>
       </div>
-      <div class="lesson-list" id="lessonList" aria-label="Lições da etapa inicial"></div>
+      <div class="unit-list" id="unitList" aria-label="Unidades do curso"></div>
+      <div class="lesson-list" id="lessonList" aria-label="Lições da unidade atual"></div>
       <div class="lesson-card" id="lessonContent" aria-live="polite"></div>
+      <div class="unit-test" id="unitTest">
+        <h3 id="testHeading">Teste da unidade</h3>
+        <p class="note" id="testStatus"></p>
+        <button class="btn primary" id="startTest" type="button" disabled>Concluir as lições para liberar o teste</button>
+        <div id="testContent" aria-live="polite"></div>
+      </div>
     </div>
 
     <details class="sheet roadmap">
-      <summary>Ver o plano completo · 10 etapas</summary>
+      <summary>Ver o plano completo · do zero ao avançado</summary>
       <div class="roadmap-list" id="roadmapList"></div>
-      <p class="note" style="margin:0">Os módulos seguintes são um roteiro de estudo e serão publicados com lições e exercícios próprios. Os níveis indicam objetivos aproximados, não uma certificação.</p>
+      <p class="note" style="margin:0">As quatro primeiras unidades têm atividades e avaliações. As demais mostram os próximos objetivos; elas só serão liberadas quando seu conteúdo estiver pronto. Os níveis são aproximados e não equivalem a uma certificação.</p>
     </details>
 
     <div class="sheet">
@@ -233,6 +262,31 @@ details>summary{cursor:pointer;font-weight:700}
       <select id="phrCat" class="grow" aria-label="Situação"></select>
     </div>
     <div class="sheet" id="phrList"></div>
+  </section>
+
+  <!-- CONVERSA -->
+  <section class="panel" id="p-chat" role="tabpanel" aria-labelledby="tab-chat" tabindex="0" hidden>
+    <div class="sheet chat-intro">
+      <h2>Converse em inglês</h2>
+      <p>Pratique uma conversa real com um tutor que adapta as respostas ao seu nível. Escreva ou use o microfone; você pode ouvir as respostas em voz alta.</p>
+      <p class="note" style="margin:0">O microfone depende da permissão do navegador. O reconhecimento de voz funciona melhor no Chrome e no Edge. A conversa é enviada ao tutor para gerar respostas e não é salva pelo app.</p>
+    </div>
+    <div class="sheet chat-box">
+      <div class="row chat-controls">
+        <label class="chat-toggle"><input id="chatSpeak" type="checkbox" checked> Ler respostas em voz alta</label>
+        <button class="btn" id="chatClear" type="button">Nova conversa</button>
+      </div>
+      <div class="chat-messages" id="chatMessages" role="log" aria-live="polite" aria-relevant="additions"></div>
+      <p class="note" id="chatStatus" aria-live="polite"></p>
+      <form class="chat-form" id="chatForm">
+        <label class="lbl" for="chatInput">Sua mensagem</label>
+        <textarea id="chatInput" maxlength="600" rows="3" placeholder="Escreva em inglês ou português…" required></textarea>
+        <div class="row">
+          <button class="btn" id="chatMic" type="button" aria-label="Falar sua mensagem">🎙 Falar</button>
+          <button class="btn primary grow" id="chatSend" type="submit">Enviar</button>
+        </div>
+      </form>
+    </div>
   </section>
 </div>
 
@@ -308,29 +362,61 @@ const PHRASES={
  "Aeroporto e hotel":[["I have a reservation under Silva.","Tenho uma reserva no nome de Silva."],["What time is check-out?","Que horas é o check-out?"],["Where is gate twelve?","Onde fica o portão doze?"],["Is breakfast included?","O café da manhã está incluso?"],["My luggage didn't arrive.","Minha bagagem não chegou."],["How much is a taxi to downtown?","Quanto custa um táxi até o centro?"]],
  "Trabalho e reuniões":[["Let me share my screen.","Vou compartilhar minha tela."],["Can you hear me?","Vocês estão me ouvindo?"],["I'll get back to you on that.","Te dou um retorno sobre isso."],["Let's schedule a call.","Vamos marcar uma ligação."],["Could you clarify that?","Pode esclarecer isso?"],["I'm running a bit late.","Estou um pouco atrasado."]]
 };
-const COURSE_UNITS=[
- ["A1","Primeiras interações","Cumprimentos, apresentações, pronomes e frases simples sobre você."],
- ["A1","Vida cotidiana","Família, objetos, horários, preferências e perguntas frequentes."],
- ["A2","Rotina e passado","Hábitos, experiências recentes e relatos curtos no passado."],
- ["A2","Planos e situações reais","Futuro, direções, compras, viagens e pedidos educados."],
- ["B1","Conversa independente","Conectar ideias, contar histórias e lidar com situações comuns."],
- ["B1","Narrativas e opiniões","Explicar razões, comparar opções e defender opiniões simples."],
- ["B2","Fluência social e profissional","Participar de conversas longas, reuniões e discussões."],
- ["B2","Argumentação e nuances","Interpretar argumentos, registro, expressões e diferentes pontos de vista."],
- ["C1","Precisão e flexibilidade","Usar inglês com clareza em contextos acadêmicos e profissionais."],
- ["C1–C2","Autonomia avançada","Aprimorar nuances, compreensão implícita e expressão espontânea."]
+const ACTIVE_UNITS=[
+ {id:"u1",level:"PRÉ-A1",title:"Primeiras palavras",goal:"Comece sem precisar saber gramática: cumprimentar, agradecer e dizer seu nome.",lessons:[
+  {title:"Dizer olá",goal:"Reconheça uma saudação básica.",prompt:"Como se diz “Olá” em inglês?",options:["Hello!","Sorry!","Goodbye!"],answer:0,example:"Hello!",translation:"Olá!",tip:"Hello é uma forma comum e educada de cumprimentar alguém."},
+  {title:"Ser educado",goal:"Use palavras simples de cortesia.",prompt:"Você recebe ajuda. O que diz para agradecer?",options:["Please.","Thank you.","Excuse me."],answer:1,example:"Thank you!",translation:"Obrigado(a)!",tip:"Thank you é uma forma comum de dizer obrigado(a). Please significa por favor."},
+  {title:"Dizer seu nome",goal:"Use My name is para apresentar seu nome.",prompt:"Como dizer “Meu nome é Ana”?",options:["My name is Ana.","My Ana name.","Name is my Ana."],answer:0,example:"My name is Ana.",translation:"Meu nome é Ana.",tip:"A ordem é My name is + nome. Você também pode dizer I'm Ana."},
+  {title:"Fazer uma apresentação curta",goal:"Junte saudação e apresentação.",prompt:"Qual é uma apresentação simples e correta?",options:["Hello, my name is Ana.","Hello, I name Ana.","Goodbye, my name Ana."],answer:0,example:"Hello, my name is Ana.",translation:"Olá, meu nome é Ana.",tip:"Comece com Hello e depois diga My name is + nome."}
+ ],test:[
+  {prompt:"Uma pessoa chega. Como dizer “Olá”?",options:["Hello!","Good night!","Please!"],answer:0,tip:"Hello é uma saudação."},
+  {prompt:"Como dizer “Obrigado(a)”?",options:["Excuse me.","Thank you.","Goodbye."],answer:1,tip:"Thank you agradece."},
+  {prompt:"Complete sua apresentação: “My name ___ Ana.”",options:["am","is","are"],answer:1,tip:"A expressão completa é My name is…"},
+  {prompt:"Escolha uma apresentação completa.",options:["Hello, my name is Ana.","My name Ana hello.","Goodbye, name is Ana."],answer:0,tip:"Cumprimente e diga My name is + nome."}
+ ]},
+ {id:"u2",level:"A1 · INÍCIO",title:"Eu sou, eu não sou",goal:"Aprenda os pronomes e as frases afirmativas, negativas e perguntas com o verbo be.",lessons:[
+  {title:"Reconhecer I e you",goal:"I significa eu; you significa você ou vocês.",prompt:"Qual palavra significa “eu”?",options:["I","You","They"],answer:0,example:"I am here.",translation:"Eu estou aqui.",tip:"I sempre se escreve com letra maiúscula."},
+  {title:"Dizer quem você é",goal:"Use I am e you are.",prompt:"Complete: “I ___ a student.”",options:["am","is","are"],answer:0,example:"I am a student.",translation:"Eu sou estudante.",tip:"Com I, usamos am. Com you, usamos are."},
+  {title:"Fazer uma frase negativa",goal:"Coloque not depois de am/are para negar.",prompt:"Como dizer “Eu não estou cansado(a)”?",options:["I not am tired.","I am not tired.","I don't tired."],answer:1,example:"I am not tired.",translation:"Eu não estou cansado(a).",tip:"Com o verbo be, a negação é am/are/is + not. Não use don't com am."},
+  {title:"Perguntar e responder",goal:"Em uma pergunta com be, coloque am/are antes da pessoa.",prompt:"Como perguntar “Você não está pronto(a)?”",options:["You are not ready?","Are you not ready?","Do you not are ready?"],answer:1,example:"Are you not ready?",translation:"Você não está pronto(a)?",tip:"Pergunta: Are + you + not…? Na fala, também se usa Aren't you ready?"}
+ ],test:[
+  {prompt:"Escolha o pronome que significa “você”.",options:["I","You","He"],answer:1,tip:"You significa você ou vocês."},
+  {prompt:"Complete: “I ___ happy.”",options:["am","is","are"],answer:0,tip:"Com I, usamos am."},
+  {prompt:"Qual frase diz “Eu não estou cansado(a)”? ",options:["I don't tired.","I am not tired.","I not am tired."],answer:1,tip:"Negue o verbo be usando am + not."},
+  {prompt:"Escolha a pergunta “Você está pronto(a)?”.",options:["Are you ready?","You are ready?","Is you ready?"],answer:0,tip:"Na pergunta, are vem antes de you."}
+ ]},
+ {id:"u3",level:"A1",title:"Perguntas sobre você",goal:"Fale sua idade, de onde você é e dê respostas curtas, incluindo negativas.",lessons:[
+  {title:"Dizer sua idade",goal:"Em inglês usamos be para falar de idade.",prompt:"Como dizer “Eu tenho 20 anos”?",options:["I have 20 years old.","I am 20 years old.","I are 20."],answer:1,example:"I am 20 years old.",translation:"Eu tenho 20 anos.",tip:"Em inglês, diga I am… years old, não I have…"},
+  {title:"Falar de onde você é",goal:"Use from para dizer de onde você vem.",prompt:"Complete: “I am ___ Brazil.”",options:["from","at","to"],answer:0,example:"I am from Brazil.",translation:"Eu sou do Brasil.",tip:"A estrutura é I am from + país ou cidade."},
+  {title:"Negar sua origem",goal:"Use am not para negar uma informação sobre você.",prompt:"Como dizer “Eu não sou do Canadá”?",options:["I don't from Canada.","I am not from Canada.","I not from Canada."],answer:1,example:"I am not from Canada.",translation:"Eu não sou do Canadá.",tip:"From precisa do verbo be. Para negar, diga am not from."},
+  {title:"Responder uma pergunta",goal:"Responda Are you…? com Yes, I am ou No, I'm not.",prompt:"Alguém pergunta “Are you from Brazil?” e você é. Como responde?",options:["Yes, I am.","Yes, I do.","Yes, I from."],answer:0,example:"Yes, I am. I'm from Brazil.",translation:"Sim. Sou do Brasil.",tip:"Are you…? pergunta com be. A resposta curta correspondente é Yes, I am."}
+ ],test:[
+  {prompt:"Como dizer “Eu tenho 18 anos”?",options:["I have 18 years.","I am 18 years old.","I is 18."],answer:1,tip:"A idade usa I am… years old."},
+  {prompt:"Complete: “She is ___ Recife.”",options:["from","do","at"],answer:0,tip:"Use from para dizer de onde alguém é."},
+  {prompt:"Escolha a frase negativa correta.",options:["I'm not from Canada.","I don't from Canada.","I not am from Canada."],answer:0,tip:"A contração de I am not é I'm not."},
+  {prompt:"Você é do Brasil. Responda “Are you from Brazil?”",options:["Yes, I am.","Yes, I do.","Yes, I from."],answer:0,tip:"A resposta curta a uma pergunta com are usa am."}
+ ]},
+ {id:"u4",level:"A1",title:"Coisas e rotina",goal:"Use palavras do dia a dia, fale de hábitos e aprenda a negar ações.",lessons:[
+  {title:"Nomear uma coisa",goal:"Use a ou an antes de um substantivo singular.",prompt:"Complete: “It is ___ apple.”",options:["a","an","are"],answer:1,example:"It is an apple.",translation:"É uma maçã.",tip:"Use an antes de um som de vogal: an apple."},
+  {title:"Falar do que você tem",goal:"Use have com I e has com he ou she.",prompt:"Complete: “She ___ a book.”",options:["have","has","is"],answer:1,example:"She has a book.",translation:"Ela tem um livro.",tip:"Com he/she/it, have muda para has."},
+  {title:"Falar da rotina",goal:"Use o presente simples para falar de hábitos.",prompt:"Complete: “I ___ every morning.”",options:["work","works","working"],answer:0,example:"I work every morning.",translation:"Eu trabalho todas as manhãs.",tip:"Com I, use o verbo sem -s: I work."},
+  {title:"Negar uma rotina",goal:"Use don't antes do verbo para negar ações com I/you/we/they.",prompt:"Como dizer “Eu não trabalho à noite”?",options:["I not work at night.","I don't work at night.","I doesn't work at night."],answer:1,example:"I don't work at night.",translation:"Eu não trabalho à noite.",tip:"Para negar uma ação com I, use don't + verbo. Com he/she, use doesn't."}
+ ],test:[
+  {prompt:"Complete: “___ orange.”",options:["A","An","Is"],answer:1,tip:"Orange começa com som de vogal: an orange."},
+  {prompt:"Complete: “He ___ a sister.”",options:["have","has","is have"],answer:1,tip:"Com he, use has."},
+  {prompt:"Escolha a frase sobre uma rotina.",options:["I work every day.","I working every day.","I works every day."],answer:0,tip:"Com I, use work sem -s."},
+  {prompt:"Como dizer “Ela não trabalha aqui”?",options:["She don't work here.","She doesn't work here.","She not works here."],answer:1,tip:"Com she, negue usando doesn't + verbo sem -s."}
+ ]}
 ];
-const STARTER_LESSONS=[
- {title:"Dizer quem você é",goal:"Use I am (ou I'm) para falar de si.",prompt:"Como dizer “Eu sou estudante” em inglês?",options:["I am a student.","I is a student.","I are student."],answer:0,example:"I am a student.",translation:"Eu sou estudante.",tip:"Com I, use am. Antes de uma profissão no singular, normalmente use a ou an."},
- {title:"Falar com você",goal:"Use you are (ou you're) para falar com alguém.",prompt:"Como perguntar “Você está pronto(a)?”",options:["You are ready?","Are you ready?","Is you ready?"],answer:1,example:"Are you ready?",translation:"Você está pronto(a)?",tip:"Em perguntas com o verbo be, coloque are antes de you."},
- {title:"Dizer seu nome",goal:"Apresente-se com My name is…",prompt:"Como dizer “Meu nome é Ana”?",options:["My name Ana.","My name is Ana.","I name is Ana."],answer:1,example:"My name is Ana.",translation:"Meu nome é Ana.",tip:"A estrutura é My name is + nome. Também é comum dizer I'm Ana."},
- {title:"Cumprimentar",goal:"Escolha um cumprimento adequado ao horário.",prompt:"Você encontra alguém pela manhã. O que pode dizer?",options:["Good night!","Good morning!","Goodbye morning!"],answer:1,example:"Good morning!",translation:"Bom dia!",tip:"Good morning é usado pela manhã. Good night costuma ser uma despedida à noite."},
- {title:"Perguntar e dizer a idade",goal:"Forme frases de idade com I am … years old.",prompt:"Como dizer “Eu tenho 20 anos” em inglês?",options:["I have 20 years.","I am 20 years old.","I has 20 years old."],answer:1,example:"I am 20 years old.",translation:"Eu tenho 20 anos.",tip:"Em inglês, fale da idade com o verbo be: I am … years old."},
- {title:"Usar a e an",goal:"Escolha a ou an pelo som inicial da palavra seguinte.",prompt:"Complete: “She has ___ apple.”",options:["a","an","the"],answer:1,example:"She has an apple.",translation:"Ela tem uma maçã.",tip:"Use an antes de som de vogal. O que importa é o som inicial, não apenas a letra."},
- {title:"Apontar para algo",goal:"Use this para algo singular que está perto.",prompt:"Você mostra um livro que está perto. Como diz “Este é meu livro”?",options:["This is my book.","These is my book.","This are my book."],answer:0,example:"This is my book.",translation:"Este é meu livro.",tip:"This combina com uma coisa perto e singular; use is."},
- {title:"Falar do que alguém tem",goal:"Use have com I/you e has com he/she/it.",prompt:"Complete: “She ___ a brother.”",options:["have","has","is"],answer:1,example:"She has a brother.",translation:"Ela tem um irmão.",tip:"Na terceira pessoa do singular (he, she, it), have muda para has."},
- {title:"Descrever sua rotina",goal:"Use o presente simples para hábitos e rotinas.",prompt:"Complete: “I ___ every morning.”",options:["work","works","working"],answer:0,example:"I work every morning.",translation:"Eu trabalho todas as manhãs.",tip:"Com I, o verbo principal não recebe -s no presente simples."},
- {title:"Fazer uma apresentação curta",goal:"Combine apresentação, origem e uma informação pessoal.",prompt:"Alguém pergunta “Where are you from?”. Qual resposta faz sentido?",options:["I'm from Brazil.","I have Brazil.","I from are Brazil."],answer:0,example:"I'm from Brazil. I'm a student.",translation:"Sou do Brasil. Sou estudante.",tip:"Where are you from? pergunta de onde alguém é. Responda I'm from + lugar."}
+const COURSE_UNITS=[
+ ...ACTIVE_UNITS.map(({level,title,goal})=>[level,title,goal,"published"]),
+ ["A2","Rotina e passado","Conte histórias do cotidiano e fale de experiências recentes.","planned"],
+ ["A2","Planos e situações reais","Fale de planos, direções, compras, viagens e pedidos educados.","planned"],
+ ["B1","Conversa independente","Conecte ideias e lide com situações comuns com mais autonomia.","planned"],
+ ["B1","Narrativas e opiniões","Conte histórias, explique razões e compare opções.","planned"],
+ ["B2","Fluência social e profissional","Participe de conversas longas, reuniões e discussões.","planned"],
+ ["B2","Argumentação e nuances","Interprete argumentos, registro e diferentes pontos de vista.","planned"],
+ ["C1–C2","Precisão e autonomia","Comunique nuances e se expresse com flexibilidade em contextos avançados.","planned"]
 ];
 const ALL=[];for(const c in VOCAB)VOCAB[c].forEach(v=>ALL.push({id:v[0],cat:c,en:v[0],ipa:v[1],pt:v[2],ex:v[3],expt:v[4]}));
 const SENT=[...ALL.map(w=>w.ex),...Object.values(PHRASES).flat().map(p=>p[0])];
@@ -339,7 +425,12 @@ const SENT=[...ALL.map(w=>w.ex),...Object.values(PHRASES).flat().map(p=>p[0])];
 const KEY="caderno-ingles-v1";
 let S={cards:{},days:[],dict:0,course:{completed:[]}};
 try{const r=localStorage.getItem(KEY);if(r)S=Object.assign(S,JSON.parse(r));}catch(e){}
-if(!S.course||!Array.isArray(S.course.completed))S.course={completed:[]};
+if(!S.course||S.course.version!==2){
+  S.course={version:2,completed:[],tests:{},legacyCompleted:Array.isArray(S.course?.completed)?S.course.completed:[]};
+}else{
+  if(!Array.isArray(S.course.completed))S.course.completed=[];
+  if(!S.course.tests||typeof S.course.tests!=="object")S.course.tests={};
+}
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}};
 const today=()=>{const d=new Date();return d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate();};
 const dayNum=()=>Math.floor((Date.now()-new Date().getTimezoneOffset()*6e4)/864e5);
@@ -353,6 +444,90 @@ const hasTTS='speechSynthesis' in window;
 if(hasTTS){pickVoice();speechSynthesis.onvoiceschanged=pickVoice;}else{ttsNote.textContent="Seu navegador não tem voz sintetizada. Tente no Chrome, Edge ou Safari.";}
 function say(t,rate=.95){if(!hasTTS)return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang="en-US";if(voice)u.voice=voice;u.rate=rate;speechSynthesis.speak(u);}
 const spkBtn=(t,label="Ouvir pronúncia")=>{const b=document.createElement("button");b.className="speak";b.innerHTML=SPK;b.setAttribute("aria-label",label);b.onclick=e=>{e.stopPropagation();say(t);};return b;};
+
+// ---- AI conversation practice ----
+const chatForm=document.getElementById("chatForm");
+const chatInput=document.getElementById("chatInput");
+const chatMessages=document.getElementById("chatMessages");
+const chatStatus=document.getElementById("chatStatus");
+const chatSend=document.getElementById("chatSend");
+const chatMic=document.getElementById("chatMic");
+const chatSpeak=document.getElementById("chatSpeak");
+let chatHistory=[],chatBusy=false,chatRecognition=null;
+function appendChatMessage(role,text){
+  const message=document.createElement("div");message.className=`chat-message ${role}`;
+  message.textContent=text;chatMessages.append(message);chatMessages.scrollTop=chatMessages.scrollHeight;
+  return message;
+}
+function resetChat(){
+  chatHistory=[];chatMessages.innerHTML="";
+  appendChatMessage("assistant","Hi! I'm your English tutor. Let's start slowly: what's your name?");
+  chatStatus.textContent="Dica: responda em inglês. Se precisar, pode pedir ajuda em português.";
+}
+resetChat();
+const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;
+if(!SpeechRecognition){
+  chatMic.disabled=true;
+  chatMic.title="O reconhecimento de voz não está disponível neste navegador.";
+}else{
+  chatRecognition=new SpeechRecognition();
+  chatRecognition.lang="en-US";chatRecognition.interimResults=false;chatRecognition.maxAlternatives=1;
+  chatRecognition.onstart=()=>{chatMic.textContent="Parar microfone";chatMic.setAttribute("aria-label","Parar microfone");chatMic.setAttribute("aria-pressed","true");chatStatus.textContent="Estou ouvindo…";};
+  chatRecognition.onresult=event=>{
+    const transcript=event.results[0][0].transcript;
+    chatInput.value=chatInput.value?`${chatInput.value} ${transcript}`:transcript;
+    chatInput.focus();chatStatus.textContent="Revise o que foi reconhecido e pressione Enviar.";
+  };
+  chatRecognition.onerror=event=>{
+    chatStatus.className="note chat-status-error";
+    chatStatus.textContent=event.error==="not-allowed"
+      ?"O acesso ao microfone foi bloqueado. Permita o microfone nas configurações do navegador."
+      :"Não consegui reconhecer a fala. Tente novamente ou digite sua resposta.";
+  };
+  chatRecognition.onend=()=>{chatMic.textContent="🎙 Falar";chatMic.setAttribute("aria-label","Falar sua mensagem");chatMic.setAttribute("aria-pressed","false");};
+}
+chatMic.onclick=()=>{
+  if(!chatRecognition)return;
+  if(chatMic.textContent==="Parar microfone")chatRecognition.stop();
+  else{chatStatus.className="note";chatRecognition.start();}
+};
+document.getElementById("chatClear").onclick=()=>{
+  if(chatBusy)return;
+  if(hasTTS)speechSynthesis.cancel();
+  resetChat();
+};
+chatForm.onsubmit=async event=>{
+  event.preventDefault();
+  const text=chatInput.value.trim();
+  if(!text||chatBusy)return;
+  chatHistory.push({role:"user",content:text});
+  appendChatMessage("user",text);chatInput.value="";chatBusy=true;chatSend.disabled=true;
+  chatStatus.className="note";chatStatus.textContent="O tutor está pensando…";
+  const typing=appendChatMessage("assistant","…");
+  try{
+    const response=await fetch("/api/chat",{
+      method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({messages:chatHistory.slice(-12)})
+    });
+    let result;
+    try{result=await response.json();}
+    catch{
+      throw new Error(response.ok?"Resposta inválida do tutor. Tente novamente.":"O serviço do tutor não está disponível. Confira a configuração da API e tente novamente.");
+    }
+    if(!response.ok)throw new Error(result.error||"O tutor não conseguiu responder. Tente novamente.");
+    if(typeof result.reply!=="string"||!result.reply.trim())throw new Error("O tutor enviou uma resposta vazia. Tente novamente.");
+    typing.remove();chatHistory.push({role:"assistant",content:result.reply});
+    chatHistory=chatHistory.slice(-12);appendChatMessage("assistant",result.reply);
+    chatStatus.textContent="Boa! Continue a conversa ou comece outra.";
+    markStudy();if(chatSpeak.checked)say(result.reply);
+  }catch(error){
+    typing.remove();console.error("English tutor chat failed",error);
+    chatStatus.className="note chat-status-error";chatStatus.textContent=error.message;
+    appendChatMessage("assistant",error.message);
+  }finally{
+    chatBusy=false;chatSend.disabled=false;chatInput.focus();
+  }
+};
 
 // ---- tabs ----
 const tabs=[...document.querySelectorAll('[role="tab"]')];
@@ -381,56 +556,94 @@ tabs.forEach((tab,index)=>{
 });
 
 // ---- guided learning path ----
-const COURSE_TOTAL=100;
+const COURSE_TOTAL=ACTIVE_UNITS.reduce((total,unit)=>total+unit.lessons.length+1,0);
 const lessonList=document.getElementById("lessonList");
 const lessonContent=document.getElementById("lessonContent");
 const courseProgressMeter=document.getElementById("courseProgressMeter");
 const courseProgressText=document.getElementById("courseProgressText");
 const roadmapList=document.getElementById("roadmapList");
-let selectedLesson=0;
-const lessonId=i=>`a1-${i+1}`;
+const unitList=document.getElementById("unitList");
+const unitLevel=document.getElementById("unitLevel");
+const unitTitle=document.getElementById("unitTitle");
+const unitGoal=document.getElementById("unitGoal");
+const testStatus=document.getElementById("testStatus");
+const startTest=document.getElementById("startTest");
+const testContent=document.getElementById("testContent");
+let selectedUnit=0,selectedLesson=0,unitTestRun=null;
+const lessonId=(unitIndex,lessonIndex)=>`${ACTIVE_UNITS[unitIndex].id}-l${lessonIndex+1}`;
 function completedLessons(){return new Set(S.course.completed.filter(id=>typeof id==="string"));}
+function testResult(unitIndex){return S.course.tests[ACTIVE_UNITS[unitIndex].id]||null;}
+function unitUnlocked(unitIndex){return unitIndex===0||Boolean(testResult(unitIndex-1)?.passed);}
 function renderRoadmap(){
   roadmapList.innerHTML="";
-  COURSE_UNITS.forEach(([level,title,goal],index)=>{
+  COURSE_UNITS.forEach(([level,title,goal,status],index)=>{
     const item=document.createElement("div");item.className="roadmap-item";
     const badge=document.createElement("span");badge.className="level";badge.textContent=level;
     const body=document.createElement("div");
     const heading=document.createElement("strong");heading.textContent=`${index+1}. ${title}`;
     const description=document.createElement("p");description.textContent=goal;
-    const status=document.createElement("span");status.className="note";status.textContent=index===0?"Conteúdo inicial publicado":"Conteúdo planejado";
-    body.append(heading,description,status);item.append(badge,body);roadmapList.append(item);
+    const state=document.createElement("span");state.className="note";state.textContent=status==="published"?"Aulas e teste disponíveis":"Em preparação";
+    body.append(heading,description,state);item.append(badge,body);roadmapList.append(item);
   });
 }
 function renderCourse(){
   const done=completedLessons();
-  const completedCount=STARTER_LESSONS.filter((_,i)=>done.has(lessonId(i))).length;
+  if(!unitUnlocked(selectedUnit)){
+    selectedUnit=ACTIVE_UNITS.findIndex((_,index)=>unitUnlocked(index)&&!testResult(index)?.passed);
+    if(selectedUnit<0)selectedUnit=ACTIVE_UNITS.length-1;
+  }
+  const completedLessonsCount=ACTIVE_UNITS.reduce((total,unit,unitIndex)=>
+    total+unit.lessons.filter((_,lessonIndex)=>done.has(lessonId(unitIndex,lessonIndex))).length,0);
+  const passedTests=ACTIVE_UNITS.filter((_,index)=>testResult(index)?.passed).length;
+  const completedCount=completedLessonsCount+passedTests;
   const progress=Math.round(completedCount/COURSE_TOTAL*100);
   courseProgressMeter.style.width=progress+"%";
   courseProgressMeter.parentElement.setAttribute("aria-valuenow",progress);
-  courseProgressText.textContent=`${completedCount} de ${COURSE_TOTAL} lições`;
-  const nextLesson=STARTER_LESSONS.findIndex((_,i)=>!done.has(lessonId(i)));
-  if(!done.has(lessonId(selectedLesson))&&nextLesson>=0)selectedLesson=nextLesson;
-  if(nextLesson<0)selectedLesson=STARTER_LESSONS.length-1;
+  courseProgressText.textContent=`${completedCount} de ${COURSE_TOTAL} atividades · ${passedTests} de ${ACTIVE_UNITS.length} unidades aprovadas`;
+  unitList.innerHTML="";
+  ACTIVE_UNITS.forEach((unit,index)=>{
+    const unlocked=unitUnlocked(index),passed=Boolean(testResult(index)?.passed);
+    const button=document.createElement("button");button.type="button";button.className="btn unit-item";
+    button.disabled=!unlocked;button.setAttribute("aria-current",index===selectedUnit?"step":"false");
+    const title=document.createElement("strong");title.textContent=`${index+1}. ${unit.title}`;
+    const status=document.createElement("small");status.textContent=passed?"Aprovada":unlocked?"Em andamento":"Bloqueada · passe no teste anterior";
+    button.append(title,status);button.onclick=()=>{
+      if(!unlocked)return;
+      selectedUnit=index;
+      const progress=completedLessons();
+      const firstIncomplete=unit.lessons.findIndex((_,lessonIndex)=>!progress.has(lessonId(index,lessonIndex)));
+      selectedLesson=firstIncomplete>=0?firstIncomplete:unit.lessons.length-1;
+      unitTestRun=null;renderCourse();
+    };
+    unitList.append(button);
+  });
+  const unit=ACTIVE_UNITS[selectedUnit];
+  unitLevel.textContent=`UNIDADE ${selectedUnit+1} · ${unit.level}`;
+  unitTitle.textContent=unit.title;
+  unitGoal.textContent=unit.goal;
+  const nextLesson=unit.lessons.findIndex((_,index)=>!done.has(lessonId(selectedUnit,index)));
+  if(nextLesson>=0&&!done.has(lessonId(selectedUnit,selectedLesson)))selectedLesson=nextLesson;
+  if(nextLesson<0)selectedLesson=unit.lessons.length-1;
   lessonList.innerHTML="";
-  STARTER_LESSONS.forEach((lesson,index)=>{
-    const isDone=done.has(lessonId(index)),locked=!isDone&&index!==nextLesson;
+  unit.lessons.forEach((lesson,index)=>{
+    const isDone=done.has(lessonId(selectedUnit,index)),locked=!isDone&&index!==nextLesson;
     const item=document.createElement("button");item.type="button";item.className="btn lesson-item";
     if(isDone)item.classList.add("done");
     item.disabled=locked;item.setAttribute("aria-current",index===selectedLesson?"step":"false");
     const title=document.createElement("span");title.className="lesson-title";title.textContent=`${index+1}. ${lesson.title}`;
     const status=document.createElement("span");status.className="lesson-status";
-    status.textContent=isDone?"Concluída":locked?"Bloqueada":index===nextLesson?"Próxima":"Disponível";
+    status.textContent=isDone?"Concluída":locked?"Faça a lição anterior":"Próxima";
     if(isDone)status.setAttribute("aria-label","Concluída");
     item.append(title,status);item.onclick=()=>{selectedLesson=index;renderCourse();};
     lessonList.append(item);
   });
-  renderCourseLesson(selectedLesson,done);
+  renderCourseLesson(selectedUnit,selectedLesson,done);
+  renderUnitTest(selectedUnit,nextLesson<0);
 }
-function renderCourseLesson(index,done=completedLessons()){
-  const lesson=STARTER_LESSONS[index],isDone=done.has(lessonId(index));
+function renderCourseLesson(unitIndex,index,done=completedLessons()){
+  const lesson=ACTIVE_UNITS[unitIndex].lessons[index],isDone=done.has(lessonId(unitIndex,index));
   lessonContent.innerHTML="";
-  const heading=document.createElement("h3");heading.textContent=`Lição ${index+1} · ${lesson.title}`;
+  const heading=document.createElement("h3");heading.textContent=`Lição ${index+1} de ${ACTIVE_UNITS[unitIndex].lessons.length} · ${lesson.title}`;
   const goal=document.createElement("p");goal.className="note";goal.textContent=lesson.goal;
   const prompt=document.createElement("p");prompt.className="lesson-prompt";prompt.textContent=lesson.prompt;
   const options=document.createElement("div");options.className="lesson-options";
@@ -443,7 +656,7 @@ function renderCourseLesson(index,done=completedLessons()){
       if(optionIndex===lesson.answer){
         options.querySelectorAll("button").forEach(option=>{option.disabled=true;});
         button.classList.add("ok");feedback.className="fb ok";feedback.textContent="Isso! Agora pratique a frase em voz alta ou ouça o exemplo.";
-        showLessonModel(lesson,index,lessonContent);
+        showLessonModel(lesson,unitIndex,index,lessonContent);
       }else{
         button.disabled=true;button.classList.add("no");feedback.className="fb no";
         feedback.textContent="Ainda não. Tente outra opção. Dica: "+lesson.tip;
@@ -454,24 +667,98 @@ function renderCourseLesson(index,done=completedLessons()){
   lessonContent.append(heading,goal,prompt,options,feedback);
   if(isDone){
     feedback.className="fb ok";feedback.textContent="Lição concluída. Revise o exemplo quando quiser.";
-    showLessonModel(lesson,index,lessonContent);
+    showLessonModel(lesson,unitIndex,index,lessonContent);
   }
 }
-function showLessonModel(lesson,index,container){
+function showLessonModel(lesson,unitIndex,index,container){
   const model=document.createElement("div");model.className="lesson-model";
   const example=document.createElement("p");example.textContent=`${lesson.example} — ${lesson.translation}`;
   const tip=document.createElement("p");tip.className="note";tip.textContent=lesson.tip;
   const audio=spkBtn(lesson.example,"Ouvir frase de exemplo");
   model.append(example,tip,audio);container.append(model);
-  if(completedLessons().has(lessonId(index)))return;
+  if(completedLessons().has(lessonId(unitIndex,index)))return;
   const complete=document.createElement("button");complete.type="button";complete.className="btn primary";
   complete.textContent="Concluir lição";
   complete.onclick=()=>{
-    if(!S.course.completed.includes(lessonId(index)))S.course.completed.push(lessonId(index));
-    save();markStudy();selectedLesson=Math.min(index+1,STARTER_LESSONS.length-1);renderCourse();
+    if(!S.course.completed.includes(lessonId(unitIndex,index)))S.course.completed.push(lessonId(unitIndex,index));
+    save();markStudy();selectedLesson=Math.min(index+1,ACTIVE_UNITS[unitIndex].lessons.length-1);renderCourse();
   };
   container.append(complete);
 }
+function renderUnitTest(unitIndex,lessonsComplete){
+  const unit=ACTIVE_UNITS[unitIndex],result=testResult(unitIndex);
+  testStatus.textContent=lessonsComplete
+    ?result?.passed?`Aprovado com ${result.score}/${unit.test.length}. Você pode refazer o teste ou seguir para a próxima unidade.`
+      :result?`Última tentativa: ${result.lastScore}/${unit.test.length}. Para passar, acerte pelo menos 3. Tente novamente quando quiser.`
+        :`Teste com ${unit.test.length} questões. Acerte pelo menos 3 para liberar a próxima unidade.`
+    :`Complete as ${unit.lessons.length} lições desta unidade para liberar o teste.`;
+  startTest.disabled=!lessonsComplete;
+  startTest.textContent=lessonsComplete?result?.passed?"Refazer teste":"Fazer teste da unidade":"Concluir as lições para liberar o teste";
+  testContent.innerHTML="";
+  if(unitTestRun&&unitTestRun.unitIndex===unitIndex)renderTestQuestion();
+}
+function renderTestQuestion(){
+  const run=unitTestRun,unit=ACTIVE_UNITS[run.unitIndex],question=unit.test[run.questionIndex];
+  testContent.innerHTML="";
+  const block=document.createElement("div");block.className="test-result";
+  const counter=document.createElement("p");counter.className="lbl";counter.textContent=`Questão ${run.questionIndex+1} de ${unit.test.length}`;
+  const prompt=document.createElement("p");prompt.className="test-question";prompt.textContent=question.prompt;
+  const options=document.createElement("div");options.className="test-options";
+  const feedback=document.createElement("div");feedback.className="fb";feedback.setAttribute("aria-live","polite");
+  const next=document.createElement("button");next.type="button";next.className="btn primary";next.textContent=run.questionIndex===unit.test.length-1?"Ver resultado":"Próxima questão";next.disabled=true;
+  question.options.forEach((text,index)=>{
+    const button=document.createElement("button");button.type="button";button.className="btn";button.textContent=text;
+    button.onclick=()=>{
+      if(run.answered)return;
+      run.answered=true;
+      options.querySelectorAll("button").forEach(option=>{option.disabled=true;});
+      if(index===question.answer){run.score++;button.classList.add("ok");feedback.className="fb ok";feedback.textContent="Resposta correta.";}
+      else{button.classList.add("no");options.children[question.answer].classList.add("ok");feedback.className="fb no";feedback.textContent="Resposta correta: "+question.options[question.answer]+". "+question.tip;}
+      next.disabled=false;
+    };
+    options.append(button);
+  });
+  next.onclick=()=>{
+    if(run.questionIndex===unit.test.length-1)finishUnitTest();
+    else{run.questionIndex++;run.answered=false;renderTestQuestion();}
+  };
+  block.append(counter,prompt,options,feedback,next);testContent.append(block);
+}
+function finishUnitTest(){
+  const run=unitTestRun,unit=ACTIVE_UNITS[run.unitIndex],previous=testResult(run.unitIndex);
+  const passed=Boolean(previous?.passed)||run.score>=3;
+  S.course.tests[unit.id]={
+    attempts:(previous?.attempts||0)+1,
+    score:Math.max(previous?.score||0,run.score),
+    lastScore:run.score,
+    passed
+  };
+  save();markStudy();unitTestRun=null;
+  renderCourse();
+  testContent.innerHTML="";
+  const result=document.createElement("div");result.className="test-result";
+  const title=document.createElement("h3");title.textContent=passed?"Unidade concluída!":"Vamos tentar novamente";
+  const message=document.createElement("p");message.textContent=passed
+    ?`Você acertou ${run.score} de ${unit.test.length}. ${run.unitIndex+1<ACTIVE_UNITS.length?"A próxima unidade está liberada.":"Você concluiu todas as unidades disponíveis nesta versão."}`
+    :`Você acertou ${run.score} de ${unit.test.length}. Revise as lições e tente de novo; são necessários 3 acertos.`;
+  result.append(title,message);testContent.append(result);
+  if(passed&&run.unitIndex+1<ACTIVE_UNITS.length){
+    const nextUnit=document.createElement("button");nextUnit.type="button";nextUnit.className="btn primary";nextUnit.textContent="Ir para a próxima unidade";
+    nextUnit.onclick=()=>{
+      selectedUnit=run.unitIndex+1;
+      const progress=completedLessons();
+      const firstIncomplete=ACTIVE_UNITS[selectedUnit].lessons.findIndex((_,index)=>!progress.has(lessonId(selectedUnit,index)));
+      selectedLesson=firstIncomplete>=0?firstIncomplete:ACTIVE_UNITS[selectedUnit].lessons.length-1;
+      renderCourse();
+    };
+    testContent.append(nextUnit);
+  }
+}
+startTest.onclick=()=>{
+  const unit=ACTIVE_UNITS[selectedUnit];
+  unitTestRun={unitIndex:selectedUnit,questionIndex:0,score:0,answered:false};
+  renderTestQuestion();
+};
 renderRoadmap();renderCourse();
 
 // ---- flashcards (spaced repetition) ----
