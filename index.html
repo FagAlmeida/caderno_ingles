@@ -1,0 +1,401 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Pratique inglês com flashcards, quiz, ditado e frases úteis.">
+<meta name="theme-color" content="#f3f5f9">
+<title>Caderno de Inglês</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Atkinson+Hyperlegible:wght@400;700&display=swap">
+<style>
+/* Layout: a notebook page — single column, tab strip like index dividers, one card in focus */
+:root{
+  --paper:#f3f5f9; --sheet:#ffffff; --ink:#1d2340; --muted:#5d6584; --line:#dfe3ee;
+  --accent:#3a47c9; --accent-ink:#ffffff; --mark:#ffe36b; --good:#1f8a5b; --bad:#c43d3d;
+  --display:"Bricolage Grotesque",ui-sans-serif,system-ui,sans-serif;
+  --body:"Atkinson Hyperlegible",ui-sans-serif,system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --paper:#12152a; --sheet:#1b1f3a; --ink:#e8eaf6; --muted:#9aa1c4; --line:#2c3157;
+  --accent:#8b95ff; --accent-ink:#12152a; --mark:#8a7414; --good:#4cc790; --bad:#ff7a7a; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#12152a; --sheet:#1b1f3a; --ink:#e8eaf6; --muted:#9aa1c4; --line:#2c3157;
+  --accent:#8b95ff; --accent-ink:#12152a; --mark:#8a7414; --good:#4cc790; --bad:#ff7a7a; color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.55 var(--body);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 48px}
+.wrap{max-width:640px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+header{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap}
+h1{font:800 clamp(1.7rem,6vw,2.3rem)/1 var(--display);margin:0;letter-spacing:-.02em;text-wrap:balance}
+h1 span{background:linear-gradient(transparent 58%,var(--mark) 58%)}
+.streak{font-size:.85rem;color:var(--muted);text-align:right}
+.streak b{font:700 1.3rem/1 var(--display);color:var(--ink);display:block;font-variant-numeric:tabular-nums}
+nav{display:flex;gap:6px;overflow-x:auto;border-bottom:2px solid var(--line)}
+nav button{all:unset;cursor:pointer;padding:10px 14px;font-weight:700;color:var(--muted);border-radius:10px 10px 0 0;white-space:nowrap;margin-bottom:-2px;border-bottom:2px solid transparent}
+nav button[aria-selected="true"]{color:var(--accent);border-bottom-color:var(--accent);background:var(--sheet)}
+nav button:focus-visible,button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.panel{display:flex;flex-direction:column;gap:14px}
+.sheet{background:var(--sheet);border:1px solid var(--line);border-radius:16px;padding:22px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.lbl{font-size:.75rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700}
+select,input[type=text]{font:inherit;color:var(--ink);background:var(--sheet);border:1.5px solid var(--line);border-radius:10px;padding:10px 12px}
+input[type=text]{width:100%}
+.btn{font:700 1rem var(--body);cursor:pointer;border:1.5px solid var(--line);background:var(--sheet);color:var(--ink);border-radius:12px;padding:11px 16px}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn.good{border-color:var(--good);color:var(--good)} .btn.bad{border-color:var(--bad);color:var(--bad)}
+.btn:disabled{opacity:.45;cursor:default}
+.grow{flex:1 1 0;min-width:0}
+.speak{all:unset;cursor:pointer;display:inline-grid;place-items:center;width:40px;height:40px;border-radius:50%;background:var(--paper);color:var(--accent);flex:none}
+.speak svg{width:20px;height:20px}
+/* flashcard */
+.card{min-height:230px;display:flex;flex-direction:column;justify-content:center;gap:10px;text-align:center;cursor:pointer;user-select:none}
+.word{font:800 clamp(2rem,9vw,2.8rem)/1.1 var(--display);letter-spacing:-.01em;overflow-wrap:anywhere}
+.ipa{color:var(--muted);font-size:.95rem}
+.trans{font:600 1.4rem/1.2 var(--display);color:var(--accent)}
+.ex{color:var(--ink);font-style:italic} .ex-pt{color:var(--muted);font-size:.92rem}
+.hint{color:var(--muted);font-size:.85rem}
+.meter{height:8px;background:var(--line);border-radius:99px;overflow:hidden}
+.meter i{display:block;height:100%;background:var(--accent);width:0;transition:width .3s}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.stat{background:var(--sheet);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.stat b{font:800 1.4rem/1 var(--display);display:block;font-variant-numeric:tabular-nums}
+.stat span{font-size:.78rem;color:var(--muted)}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media (max-width:440px){.opts{grid-template-columns:1fr}}
+.opts .btn{text-align:left;min-height:56px}
+.opts .btn.ok{background:var(--good);border-color:var(--good);color:var(--sheet)}
+.opts .btn.no{background:var(--bad);border-color:var(--bad);color:var(--sheet)}
+.fb{min-height:1.5em;font-weight:700} .fb.ok{color:var(--good)} .fb.no{color:var(--bad)}
+.phr{display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-top:1px solid var(--line)}
+.phr:first-of-type{border-top:0}
+.phr .en{font-weight:700} .phr .pt{color:var(--muted);font-size:.92rem}
+.diff{font-size:1.05rem;line-height:1.8} .diff .w-ok{color:var(--good)} .diff .w-no{color:var(--bad);text-decoration:line-through}
+.diff .w-miss{background:var(--mark);padding:0 3px;border-radius:4px}
+.note{font-size:.85rem;color:var(--muted)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <h1>Caderno de <span>Inglês</span></h1>
+    <div class="streak"><b id="streakN">0</b>dias seguidos</div>
+  </header>
+
+  <nav role="tablist">
+    <button role="tab" id="tab-cards" aria-controls="p-cards" tabindex="0" data-tab="cards" aria-selected="true">Flashcards</button>
+    <button role="tab" id="tab-quiz" aria-controls="p-quiz" tabindex="-1" data-tab="quiz" aria-selected="false">Quiz</button>
+    <button role="tab" id="tab-dict" aria-controls="p-dict" tabindex="-1" data-tab="dict" aria-selected="false">Ditado</button>
+    <button role="tab" id="tab-phrases" aria-controls="p-phrases" tabindex="-1" data-tab="phrases" aria-selected="false">Frases úteis</button>
+  </nav>
+
+  <!-- FLASHCARDS -->
+  <section class="panel" id="p-cards" role="tabpanel" aria-labelledby="tab-cards" tabindex="0">
+    <div class="stats">
+      <div class="stat"><b id="sDue">0</b><span>para revisar hoje</span></div>
+      <div class="stat"><b id="sLearn">0</b><span>aprendendo</span></div>
+      <div class="stat"><b id="sKnown">0</b><span>dominadas</span></div>
+    </div>
+    <div class="row">
+      <span class="lbl">Tema</span>
+      <select id="catCards" class="grow" aria-label="Tema dos flashcards"></select>
+    </div>
+    <div class="meter" aria-hidden="true"><i id="meter"></i></div>
+    <div class="sheet card" id="card" tabindex="0" aria-live="polite"></div>
+    <div class="row" id="rateRow" hidden>
+      <button class="btn bad grow" id="rAgain">Errei</button>
+      <button class="btn grow" id="rHard">Difícil</button>
+      <button class="btn good grow" id="rGood">Acertei</button>
+    </div>
+    <p class="note">Cards que você acerta voltam em 1, 3, 7, 14 e 30 dias. Os que você erra voltam na hora. Seu progresso fica salvo neste navegador.</p>
+  </section>
+
+  <!-- QUIZ -->
+  <section class="panel" id="p-quiz" role="tabpanel" aria-labelledby="tab-quiz" tabindex="0" hidden>
+    <div class="row">
+      <span class="lbl">Modo</span>
+      <select id="quizMode" class="grow" aria-label="Modo do quiz">
+        <option value="en2pt">Inglês → Português</option>
+        <option value="pt2en">Português → Inglês</option>
+      </select>
+      <span class="lbl" id="quizScore">0 / 0</span>
+    </div>
+    <div class="sheet" style="display:flex;flex-direction:column;gap:14px">
+      <div class="row"><div class="word grow" id="qWord" style="font-size:2rem"></div><button class="speak" id="qSpeak" aria-label="Ouvir pronúncia"></button></div>
+      <div class="opts" id="qOpts"></div>
+      <div class="fb" id="qFb" aria-live="polite"></div>
+      <button class="btn primary" id="qNext">Próxima</button>
+    </div>
+  </section>
+
+  <!-- DITADO -->
+  <section class="panel" id="p-dict" role="tabpanel" aria-labelledby="tab-dict" tabindex="0" hidden>
+    <div class="sheet" style="display:flex;flex-direction:column;gap:14px">
+      <p style="margin:0">Ouça a frase e escreva o que entendeu. Treina o ouvido e a escrita ao mesmo tempo.</p>
+      <div class="row">
+        <button class="btn primary" id="dPlay">▶ Ouvir</button>
+        <button class="btn" id="dSlow">Ouvir devagar</button>
+        <span class="lbl" id="dScore" style="margin-left:auto">0 acertos</span>
+      </div>
+      <label for="dInput" class="lbl">Sua resposta</label>
+      <input type="text" id="dInput" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Digite em inglês…">
+      <div class="row">
+        <button class="btn good grow" id="dCheck">Conferir</button>
+        <button class="btn grow" id="dNext">Outra frase</button>
+      </div>
+      <div class="diff" id="dResult" aria-live="polite"></div>
+    </div>
+    <p class="note" id="ttsNote">O áudio usa a voz em inglês do seu próprio aparelho.</p>
+  </section>
+
+  <!-- FRASES -->
+  <section class="panel" id="p-phrases" role="tabpanel" aria-labelledby="tab-phrases" tabindex="0" hidden>
+    <div class="row">
+      <span class="lbl">Situação</span>
+      <select id="phrCat" class="grow" aria-label="Situação"></select>
+    </div>
+    <div class="sheet" id="phrList"></div>
+  </section>
+</div>
+
+<script>
+const SPK='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H2v6h4l5 4V5z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M19 5a10 10 0 0 1 0 14"/></svg>';
+
+// [inglês, pronúncia aproximada, português, exemplo, tradução]
+const VOCAB={
+ "Dia a dia":[
+  ["wake up","uêik ap","acordar","I wake up at seven every day.","Eu acordo às sete todo dia."],
+  ["breakfast","brék-fâst","café da manhã","I usually skip breakfast.","Eu normalmente pulo o café da manhã."],
+  ["to commute","tchu co-miút","ir e voltar do trabalho","I commute by bus.","Eu vou para o trabalho de ônibus."],
+  ["groceries","grôu-sê-riz","compras de mercado","I need to buy groceries.","Preciso fazer compras no mercado."],
+  ["laundry","lón-dri","roupa para lavar","I do the laundry on Sundays.","Lavo a roupa aos domingos."],
+  ["tired","táird","cansado","I'm too tired to cook tonight.","Estou cansado demais para cozinhar hoje."],
+  ["busy","bízi","ocupado","Sorry, I'm busy right now.","Desculpe, estou ocupado agora."],
+  ["neighbor","nêi-bâr","vizinho","My neighbor has a big dog.","Meu vizinho tem um cachorro grande."],
+  ["weekend","uík-énd","fim de semana","What are you doing this weekend?","O que você vai fazer neste fim de semana?"],
+  ["schedule","ské-djul","agenda, horário","My schedule is full today.","Minha agenda está cheia hoje."]
+ ],
+ "Trabalho":[
+  ["meeting","míu-tin","reunião","The meeting starts at ten.","A reunião começa às dez."],
+  ["deadline","déd-láin","prazo","The deadline is next Friday.","O prazo é na próxima sexta."],
+  ["coworker","côu-uôr-kâr","colega de trabalho","My coworker helped me a lot.","Meu colega me ajudou muito."],
+  ["salary","sé-lâ-ri","salário","They offered a good salary.","Eles ofereceram um bom salário."],
+  ["to hire","tchu ráiâr","contratar","The company wants to hire more people.","A empresa quer contratar mais gente."],
+  ["skills","skilz","habilidades","Communication skills are important.","Habilidades de comunicação são importantes."],
+  ["to apply","tchu â-plái","candidatar-se","I applied for a new job.","Eu me candidatei a um emprego novo."],
+  ["boss","bós","chefe","My boss is very fair.","Meu chefe é muito justo."],
+  ["to improve","tchu im-prúv","melhorar","I want to improve my English.","Quero melhorar meu inglês."],
+  ["customer","cás-tâ-mâr","cliente","The customer is always right.","O cliente sempre tem razão."]
+ ],
+ "Viagem":[
+  ["flight","fláit","voo","My flight was delayed.","Meu voo atrasou."],
+  ["luggage","lá-guidj","bagagem","Where can I pick up my luggage?","Onde pego minha bagagem?"],
+  ["boarding pass","bór-din pés","cartão de embarque","Here is my boarding pass.","Aqui está meu cartão de embarque."],
+  ["round trip","ráund trip","ida e volta","I want a round trip ticket.","Quero uma passagem de ida e volta."],
+  ["to book","tchu buk","reservar","I booked a hotel near the beach.","Reservei um hotel perto da praia."],
+  ["downtown","dáun-táun","centro da cidade","How do I get downtown?","Como chego ao centro?"],
+  ["sightseeing","sáit-sí-in","passeio turístico","We went sightseeing all day.","Fizemos passeios o dia todo."],
+  ["receipt","ri-sít","recibo, nota","Can I have the receipt, please?","Pode me dar o recibo, por favor?"],
+  ["subway","sâb-uêi","metrô","Let's take the subway.","Vamos de metrô."],
+  ["lost","lóst","perdido","I think we're lost.","Acho que estamos perdidos."]
+ ],
+ "Verbos frasais":[
+  ["give up","guiv ap","desistir","Don't give up now!","Não desista agora!"],
+  ["find out","fáind áut","descobrir","I found out the truth.","Descobri a verdade."],
+  ["look for","luk fór","procurar","I'm looking for my keys.","Estou procurando minhas chaves."],
+  ["figure out","fí-guiâr áut","entender, resolver","I can't figure out this problem.","Não consigo resolver esse problema."],
+  ["turn on","târn ón","ligar (aparelho)","Can you turn on the light?","Pode acender a luz?"],
+  ["run out of","ran áut óv","ficar sem","We ran out of coffee.","Ficamos sem café."],
+  ["get along","guét â-lón","se dar bem","I get along with my sister.","Eu me dou bem com minha irmã."],
+  ["put off","put óf","adiar","Stop putting it off.","Pare de adiar isso."],
+  ["show up","xôu ap","aparecer","He didn't show up.","Ele não apareceu."],
+  ["take off","teik óf","decolar / tirar (roupa)","The plane took off on time.","O avião decolou no horário."]
+ ],
+ "Falsos cognatos":[
+  ["actually","ék-tchu-â-li","na verdade","Actually, I disagree.","Na verdade, eu discordo."],
+  ["pretend","pri-ténd","fingir","He pretended to be sick.","Ele fingiu estar doente."],
+  ["push","push","empurrar","Push the door to open it.","Empurre a porta para abrir."],
+  ["library","lái-bré-ri","biblioteca","I study at the library.","Eu estudo na biblioteca."],
+  ["exquisite","éks-kuí-zit","requintado","The food was exquisite.","A comida estava requintada."],
+  ["parents","pé-rents","pais (pai e mãe)","My parents live in Recife.","Meus pais moram em Recife."],
+  ["realize","rí-â-láiz","perceber","I realized I was wrong.","Percebi que estava errado."],
+  ["college","có-lidj","faculdade","She goes to college.","Ela faz faculdade."],
+  ["eventually","i-vén-tchu-â-li","no fim das contas","Eventually, he agreed.","No fim, ele concordou."],
+  ["support","sâ-pórt","apoiar","My family supports me.","Minha família me apoia."]
+ ]
+};
+const PHRASES={
+ "Conversa básica":[["How's it going?","Como vai?"],["Nice to meet you.","Prazer em conhecer."],["What do you do for a living?","Com o que você trabalha?"],["Where are you from?","De onde você é?"],["Could you say that again, please?","Pode repetir, por favor?"],["Could you speak more slowly?","Pode falar mais devagar?"],["What does this word mean?","O que significa essa palavra?"],["See you later!","Até mais!"]],
+ "Restaurante":[["A table for two, please.","Uma mesa para dois, por favor."],["Can I see the menu?","Posso ver o cardápio?"],["I'd like the chicken, please.","Eu quero o frango, por favor."],["What do you recommend?","O que você recomenda?"],["Could we get the check, please?","A conta, por favor."],["Is the tip included?","A gorjeta está incluída?"]],
+ "Aeroporto e hotel":[["I have a reservation under Silva.","Tenho uma reserva no nome de Silva."],["What time is check-out?","Que horas é o check-out?"],["Where is gate twelve?","Onde fica o portão doze?"],["Is breakfast included?","O café da manhã está incluso?"],["My luggage didn't arrive.","Minha bagagem não chegou."],["How much is a taxi to downtown?","Quanto custa um táxi até o centro?"]],
+ "Trabalho e reuniões":[["Let me share my screen.","Vou compartilhar minha tela."],["Can you hear me?","Vocês estão me ouvindo?"],["I'll get back to you on that.","Te dou um retorno sobre isso."],["Let's schedule a call.","Vamos marcar uma ligação."],["Could you clarify that?","Pode esclarecer isso?"],["I'm running a bit late.","Estou um pouco atrasado."]]
+};
+const ALL=[];for(const c in VOCAB)VOCAB[c].forEach(v=>ALL.push({id:v[0],cat:c,en:v[0],ipa:v[1],pt:v[2],ex:v[3],expt:v[4]}));
+const SENT=[...ALL.map(w=>w.ex),...Object.values(PHRASES).flat().map(p=>p[0])];
+
+// ---- storage (best effort) ----
+const KEY="caderno-ingles-v1";
+let S={cards:{},days:[],dict:0};
+try{const r=localStorage.getItem(KEY);if(r)S=Object.assign(S,JSON.parse(r));}catch(e){}
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}};
+const today=()=>{const d=new Date();return d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate();};
+const dayNum=()=>Math.floor((Date.now()-new Date().getTimezoneOffset()*6e4)/864e5);
+function markStudy(){const t=dayNum();if(!S.days.includes(t)){S.days.push(t);S.days=S.days.slice(-400);save();}renderStreak();}
+function renderStreak(){const set=new Set(S.days);let d=dayNum(),n=0;if(!set.has(d))d--;while(set.has(d)){n++;d--;}streakN.textContent=n;}
+
+// ---- speech ----
+let voice=null;
+function pickVoice(){const vs=speechSynthesis.getVoices();voice=vs.find(v=>/en[-_]US/i.test(v.lang)&&/Google|Samantha|Natural/i.test(v.name))||vs.find(v=>/en[-_]US/i.test(v.lang))||vs.find(v=>/^en/i.test(v.lang))||null;}
+const hasTTS='speechSynthesis' in window;
+if(hasTTS){pickVoice();speechSynthesis.onvoiceschanged=pickVoice;}else{ttsNote.textContent="Seu navegador não tem voz sintetizada. Tente no Chrome, Edge ou Safari.";}
+function say(t,rate=.95){if(!hasTTS)return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang="en-US";if(voice)u.voice=voice;u.rate=rate;speechSynthesis.speak(u);}
+const spkBtn=(t,label="Ouvir pronúncia")=>{const b=document.createElement("button");b.className="speak";b.innerHTML=SPK;b.setAttribute("aria-label",label);b.onclick=e=>{e.stopPropagation();say(t);};return b;};
+
+// ---- tabs ----
+const tabs=[...document.querySelectorAll('[role="tab"]')];
+function selectTab(tab){
+  tabs.forEach(b=>{
+    const selected=b===tab;
+    b.setAttribute("aria-selected",selected);
+    b.tabIndex=selected?0:-1;
+  });
+  document.querySelectorAll(".panel").forEach(p=>p.hidden=p.id!==tab.getAttribute("aria-controls"));
+  if(tab.dataset.tab==="quiz"&&!qCur)newQ();
+}
+tabs.forEach((tab,index)=>{
+  tab.onclick=()=>selectTab(tab);
+  tab.onkeydown=e=>{
+    let next;
+    if(e.key==="ArrowRight")next=(index+1)%tabs.length;
+    else if(e.key==="ArrowLeft")next=(index+tabs.length-1)%tabs.length;
+    else if(e.key==="Home")next=0;
+    else if(e.key==="End")next=tabs.length-1;
+    else return;
+    e.preventDefault();
+    tabs[next].focus();
+    selectTab(tabs[next]);
+  };
+});
+
+// ---- flashcards (spaced repetition) ----
+const INTERVALS=[0,1,3,7,14,30];
+const cats=["Todos",...Object.keys(VOCAB)];
+catCards.innerHTML=cats.map(c=>`<option>${c}</option>`).join("");
+let queue=[],cur=null,flipped=false,sessionTotal=0;
+function st(id){return S.cards[id]||null;}
+function buildQueue(){
+  const c=catCards.value,pool=ALL.filter(w=>c==="Todos"||w.cat===c),t=dayNum();
+  const due=pool.filter(w=>st(w.id)&&st(w.id).due<=t);
+  const fresh=pool.filter(w=>!st(w.id)).slice(0,8);
+  queue=[...due,...fresh].sort(()=>Math.random()-.5);sessionTotal=queue.length;
+  renderStats();next();
+}
+function renderStats(){
+  const t=dayNum(),v=Object.values(S.cards);
+  sDue.textContent=ALL.filter(w=>st(w.id)&&st(w.id).due<=t).length;
+  sLearn.textContent=v.filter(x=>x.box<4).length;sKnown.textContent=v.filter(x=>x.box>=4).length;
+  meter.style.width=sessionTotal?((sessionTotal-queue.length-(cur?1:0))/sessionTotal*100)+"%":"100%";
+}
+function next(){
+  cur=queue.shift()||null;flipped=false;rateRow.hidden=true;card.innerHTML="";
+  if(!cur){card.innerHTML=`<div class="word" style="font-size:1.8rem">Tudo revisado!</div><div class="hint">Volte amanhã para as próximas revisões, ou escolha outro tema.</div>`;
+    const b=document.createElement("button");b.className="btn primary";b.textContent="Estudar mais 8 palavras novas";b.style.alignSelf="center";
+    b.onclick=e=>{e.stopPropagation();buildQueue();};
+    if(ALL.some(w=>!st(w.id)&&(catCards.value==="Todos"||w.cat===catCards.value)))card.append(b);
+    renderStats();return;}
+  const head=document.createElement("div");head.className="row";head.style.justifyContent="center";
+  const w=document.createElement("div");w.className="word";w.textContent=cur.en;head.append(w,spkBtn(cur.en));
+  const ipa=document.createElement("div");ipa.className="ipa";ipa.textContent="/"+cur.ipa+"/";
+  const h=document.createElement("div");h.className="hint";h.textContent=(st(cur.id)?"Revisão":"Palavra nova")+" · toque para ver a tradução";
+  card.append(head,ipa,h);renderStats();say(cur.en);
+}
+function flip(){
+  if(!cur||flipped)return;flipped=true;card.querySelector(".hint").remove();
+  const t=document.createElement("div");t.className="trans";t.textContent=cur.pt;
+  const exr=document.createElement("div");exr.className="row";exr.style.justifyContent="center";
+  const ex=document.createElement("div");ex.className="ex";ex.textContent="“"+cur.ex+"”";exr.append(ex,spkBtn(cur.ex,"Ouvir exemplo"));
+  const ep=document.createElement("div");ep.className="ex-pt";ep.textContent=cur.expt;
+  card.append(t,exr,ep);rateRow.hidden=false;rGood.focus();
+}
+card.onclick=flip;card.onkeydown=e=>{if(e.key===" "||e.key==="Enter"){e.preventDefault();flip();}};
+function rate(r){
+  const s=st(cur.id)||{box:0,due:0},t=dayNum();
+  if(r===0){s.box=0;queue.splice(Math.min(3,queue.length),0,cur);}
+  else if(r===1){s.box=Math.max(1,s.box);}
+  else{s.box=Math.min(5,s.box+1);}
+  s.due=t+INTERVALS[s.box];S.cards[cur.id]=s;save();markStudy();
+  if(r===0)sessionTotal++;
+  next();
+}
+rAgain.onclick=()=>rate(0);rHard.onclick=()=>rate(1);rGood.onclick=()=>rate(2);
+document.addEventListener("keydown",e=>{if(p_cards().hidden||!flipped||e.target.tagName==="SELECT")return;if(e.key==="1")rate(0);if(e.key==="2")rate(1);if(e.key==="3")rate(2);});
+const p_cards=()=>document.getElementById("p-cards");
+catCards.onchange=buildQueue;
+
+// ---- quiz ----
+let qCur=null,qOk=0,qN=0,qDone=false;
+qSpeak.innerHTML=SPK;
+function shuffle(a){return a.map(x=>[Math.random(),x]).sort((a,b)=>a[0]-b[0]).map(x=>x[1]);}
+function newQ(){
+  qDone=false;qFb.textContent="";qFb.className="fb";
+  qCur=ALL[Math.floor(Math.random()*ALL.length)];
+  const same=ALL.filter(w=>w.cat===qCur.cat&&w!==qCur);
+  const opts=shuffle([qCur,...shuffle(same).slice(0,3)]);
+  const en=quizMode.value==="en2pt";
+  qWord.textContent=en?qCur.en:qCur.pt;qSpeak.hidden=!en;
+  qOpts.innerHTML="";
+  opts.forEach(o=>{const b=document.createElement("button");b.className="btn";b.textContent=en?o.pt:o.en;
+    b.onclick=()=>{if(qDone)return;qDone=true;qN++;
+      const right=o===qCur;if(right)qOk++;
+      b.classList.add(right?"ok":"no");
+      [...qOpts.children].forEach((x,i)=>{if(opts[i]===qCur)x.classList.add("ok");});
+      qFb.className="fb "+(right?"ok":"no");
+      qFb.textContent=(right?"Isso! ":"Quase. ")+`${qCur.en} = ${qCur.pt}. Ex.: “${qCur.ex}”`;
+      quizScore.textContent=`${qOk} / ${qN}`;say(qCur.en);markStudy();qNext.focus();};
+    qOpts.append(b);});
+  if(en)setTimeout(()=>say(qCur.en),150);
+}
+qSpeak.onclick=()=>qCur&&say(qCur.en);qNext.onclick=newQ;quizMode.onchange=newQ;
+
+// ---- ditado ----
+let dCur="";
+const norm=s=>s.toLowerCase().replace(/[’']/g,"'").replace(/[^a-z0-9' ]/g," ").split(/\s+/).filter(Boolean);
+function newD(){dCur=SENT[Math.floor(Math.random()*SENT.length)];dInput.value="";dResult.innerHTML="";}
+dPlay.onclick=()=>{if(!dCur)newD();say(dCur,.9);dInput.focus();};
+dSlow.onclick=()=>{if(!dCur)newD();say(dCur,.6);dInput.focus();};
+dNext.onclick=()=>{newD();say(dCur,.9);dInput.focus();};
+function checkD(){
+  if(!dCur){newD();return;}
+  const a=norm(dCur),b=norm(dInput.value);
+  // LCS-based alignment
+  const m=a.length,n=b.length,L=Array.from({length:m+1},()=>Array(n+1).fill(0));
+  for(let i=m-1;i>=0;i--)for(let j=n-1;j>=0;j--)L[i][j]=a[i]===b[j]?L[i+1][j+1]+1:Math.max(L[i+1][j],L[i][j+1]);
+  let i=0,j=0,out=[];
+  while(i<m||j<n){
+    if(i<m&&j<n&&a[i]===b[j]){out.push(`<span class="w-ok">${a[i]}</span>`);i++;j++;}
+    else if(j<n&&(i>=m||L[i][j+1]>=L[i+1][j])){out.push(`<span class="w-no">${b[j]}</span>`);j++;}
+    else{out.push(`<span class="w-miss">${a[i]}</span>`);i++;}
+  }
+  const pct=Math.round(L[0][0]/Math.max(m,1)*100),perfect=pct===100&&n===m;
+  if(perfect){S.dict++;save();}
+  dScore.textContent=S.dict+" acertos";
+  dResult.innerHTML=`<div class="fb ${perfect?"ok":"no"}">${perfect?"Perfeito!":pct+"% das palavras"}</div><div>${out.join(" ")}</div><div class="note" style="margin-top:6px">Frase: “${dCur}”<br>Riscado = palavra a mais · destacado = palavra que faltou</div>`;
+  markStudy();
+}
+dCheck.onclick=checkD;dInput.onkeydown=e=>{if(e.key==="Enter")checkD();};
+dScore.textContent=S.dict+" acertos";
+
+// ---- frases ----
+phrCat.innerHTML=Object.keys(PHRASES).map(c=>`<option>${c}</option>`).join("");
+function renderPhr(){phrList.innerHTML="";PHRASES[phrCat.value].forEach(([en,pt])=>{
+  const r=document.createElement("div");r.className="phr";
+  const t=document.createElement("div");t.className="grow";t.innerHTML=`<div class="en"></div><div class="pt"></div>`;
+  t.children[0].textContent=en;t.children[1].textContent=pt;r.append(spkBtn(en),t);phrList.append(r);});}
+phrCat.onchange=renderPhr;renderPhr();
+
+renderStreak();buildQueue();
+</script>
+</body>
+</html>
